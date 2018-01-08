@@ -1,0 +1,389 @@
+---
+#- name: close firewall,selinux; modify hostname
+#  hosts: all
+#  vars_files:
+#    - ./configs/vars.yml  
+#  tasks:   
+#    - name: close firewall
+#      service: 
+#        name: firewalld
+#        state: stopped
+#        enabled: no
+#
+#    - name: close selinux temporarily
+#      shell: setenforce 0
+#      ignore_errors: yes
+#
+#    - name: colse selinux Permanently
+#      lineinfile:
+#        dest: /etc/selinux/config
+#        regexp: 'SELINUX='
+#        line: 'SELINUX=disabled'
+#
+#    - name: modify hostname
+#      hostname:
+#        name: "{{ item['hostname_short'] }}"
+#      with_items: "{{ hostname_vars }}"
+#      when: inventory_hostname == item['ip']
+#
+#    - name: modify /etc/hosts
+#      lineinfile:
+#        dest: /etc/hosts
+#        regexp: "{{ item['ip'] }}"
+#        line: "{{ item['ip'] }} {{ item['hostname_long'] }} {{ item['hostname_short'] }}"
+#        state: present
+#      with_items: "{{ hostname_vars }}"
+#
+#
+#
+#- name: install & config ntp
+#  gather_facts: no
+#  hosts: all
+#  vars_files:
+#    - ./configs/vars.yml
+#  handlers:
+#    - name: stop ntpd
+#      service:
+#        name: ntpd
+#        state: stopped
+#
+#    - name: start ntpd on server
+#      service: 
+#        name: ntpd 
+#        state: started
+#        enabled: yes
+#      when: inventory_hostname in groups['control-node']
+#    #  listen: "restart ntp"
+#    - name: sync time
+#      shell: "ntpdate {{ groups['control-node'][0] }}"
+#      register: sto
+#      when: inventory_hostname not in groups['control-node']
+#     # listen: "sync time"
+#
+#    - name: start ntpd on client
+#      service: 
+#        name: ntpd 
+#        state: started
+#        enabled: yes
+#      when: inventory_hostname not in groups['control-node']
+#  tasks:
+#    - name: install ntp
+#      yum:
+#        name: ntp
+#        state: present
+#
+#    - name: unrestrict hosts on local net-work
+#      replace:
+#        dest: /etc/ntp.conf
+#        regexp: "#restrict (.*) mask (.*) nomodify notrap.*"
+#        replace: "restrict {{ net_work }} mask {{ net_mask }} nomodify notrap"
+#      when: inventory_hostname in groups['control-node']
+#
+#    - name: comment remote server in /etc/ntp.conf
+#      replace:
+#        dest: /etc/ntp.conf
+#        regexp: "(^server.*rhel.pool.ntp.org.*)"
+#        replace: '#\1'
+#      notify:
+#        - stop ntpd
+#        - start ntpd on server
+#        - sync time
+#        - start ntpd on client
+#
+#    - name: add local server in /etc/ntp.conf step1
+#      lineinfile:
+#        dest: /etc/ntp.conf
+#        regexp: "server 127.127.1.0"
+#        insertafter : "^#server.*rhel.pool.ntp.org.*"
+#        line: "server 127.127.1.0"
+#      when: inventory_hostname in groups['control-node']
+#
+#    - name: add local server in /etc/ntp.conf step2
+#      lineinfile:
+#        dest: /etc/ntp.conf
+#        regexp: "fudge 127.127.1.0 stratum 10"
+#        insertafter: "server {{ inventory_hostname }}"
+#        line : "fudge 127.127.1.0 stratum 10"
+#      when: inventory_hostname in groups['control-node']
+#
+#    - name: config ntp-client
+#      lineinfile:
+#        dest: /etc/ntp.conf
+#        regexp: "server {{ groups['control-node'][0] }}"
+#        insertafter : "^#server.*rhel.pool.ntp.org.*"
+#        line: "server {{ groups['control-node'][0] }} iburst"
+#      when: inventory_hostname not in groups['control-node']
+#
+#
+#- name: install JDK
+#  hosts: all
+#  vars_files:
+#    - ./configs/vars.yml
+#  tasks:
+#
+#    - name: copy jdk-package to /opt
+#      unarchive:
+#        src: "{{ jdk_package_path }}"
+#        dest: /opt
+#        keep_newer: yes
+#        #remote_src: yes
+#
+#    - name: install unzip
+#      yum:
+#        name: unzip
+#        state: present
+#   
+#    - name: dispatch jce-package
+#      copy:
+#        src: "{{jce_package_path }}"
+#        dest: "/tmp/jce_policy-8.zip"
+#    - name: unzip jce-package tp jre/lib/security/
+#      shell: "unzip -j -o /tmp/jce_policy-8.zip -d /opt/jdk1.8.0_131/jre/lib/security/"
+#      creates: /opt/jdk1.8.0_131/jre/lib/security/README.txt
+#
+#    - name: modify /etc/profile export JAVA_HOME
+#      lineinfile:
+#        dest: /etc/profile
+#        regexp: 'export JAVA_HOME='
+#        line: 'export JAVA_HOME=/opt/jdk1.8.0_131'
+#        state: present
+#
+#    - name: modify /etc/profile changge PATH
+#      lineinfile:
+#        dest: /etc/profile
+#        regexp: 'export PATH='
+#        line: 'export PATH=$JAVA_HOME/bin:$PATH'
+#        state: present
+#
+#    - name: modify /etc/profile export CLASSPATH
+#      lineinfile:
+#        dest: /etc/profile
+#        regexp: 'export CLASSPATH='
+#        line: 'export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar'
+#        state: present
+#
+#
+#
+#- name: set umask
+#  hosts: all
+#  tasks:
+#    - name: set umask permanently
+#      lineinfile:
+#        regexp: "umask 0022 "
+#        dest: /etc/profile
+#        line: "umask 0022 "
+#
+#
+#- name: modiyf max_value of file_handlers
+#  hosts: all
+#  vars_files:
+#    - ./configs/vars.yml
+#  tasks:
+#    - name: modiyf /etc/security/limits.conf 
+#      lineinfile:
+#        dest: /etc/security/limits.conf 
+#        regexp: "\\*\\s+{{ item['type'] }}\\s+{{ item['item'] }}.*"
+#        state: present
+#        insertbefore: "# End of file.*"
+#        line: "{{item['domain']}}    {{item['type']}}    {{item['item']}}    {{item['value']}}"
+#      with_items: "{{ security_limit_vars }}"
+#
+#    - name: modiyf /etc/systemd/system.conf
+#      lineinfile:
+#        dest: /etc/systemd/system.conf
+#        regexp: "{{ item['item'] }}="
+#        state: present
+#        line: "{{ item['item'] }}={{ item['value'] }}"
+#      with_items: "{{ system_vars }}"
+#
+#    - name: modiyf /etc/systemd/user.conf
+#      lineinfile:
+#        dest: /etc/systemd/user.conf
+#        regexp: "{{ item['item'] }}="
+#        state: present
+#        line: "{{ item['item'] }}={{ item['value'] }}"
+#      with_items: "{{ system_vars }}"
+#
+#    - name: systemctl daemon-reload
+#      shell: "systemctl daemon-reload"
+#
+#
+#- name: close THP
+#  hosts: all
+#  handlers:
+#    - name: systemctl daemon-reload
+#      shell: "systemctl daemon-reload"
+#
+#    - name: start disable-thp service and systemctl enbaled disable-thp
+#      service:
+#        name: disable-thp
+#        state: started
+#        enabled: yes
+#  tasks:
+#    - name: dispatch /etc/systemd/system/disable-thp.service 
+#      copy:
+#        src: ./configs/disable-thp.service 
+#        dest: /etc/systemd/system/disable-thp.service
+#      notify: 
+#        - systemctl daemon-reload
+#        - start disable-thp service and systemctl enbaled disable-thp
+#
+#
+#- name: install httpd on control-node
+#  hosts: control-node
+#  tasks:
+#    - name: install httpd
+#      yum:
+#        name: httpd
+#        state: present
+#    - name: systemctl enable httpd and start httpd
+#      service:
+#        name: httpd
+#        enabled: yes
+#        state: started
+#
+#
+#- name: install postgres database
+#  hosts: control-node
+#  vars_files:
+#    - ./configs/vars.yml
+#  handlers:
+#    - name: start pg-service and systemctl enable pg-service
+#      service: 
+#        name: postgresql-9.5
+#        state: started
+#        enabled: yes
+#
+#  tasks:
+#    #- name: install pg repository rpm
+#    #  yum:
+#    #    name: "{{ pg_repository_rpm }}"
+#    #    state: present 
+#
+#    - name: dispatch pg_packages
+#      copy:
+#        src: "{{ pg_packages_dir }}"
+#        dest: /opt/
+#
+#    - find:
+#        paths: '/opt/postgresql95'
+#        patterns: 'postgresql*'
+#      register: pg_packages    
+#
+#    - name: install pg
+#      yum:
+#        name: "{{ item.path }}"
+#        state: present
+#      with_items: "{{pg_packages.files}}"
+#      register: install_result
+#
+#    - name: init database
+#      shell: "/usr/pgsql-9.5/bin/postgresql95-setup initdb"
+#      when: install_result|changed
+#      notify: start pg-service and systemctl enable pg-service
+#
+#    - name: modiyf listen_address
+#      lineinfile: 
+#        dest: /var/lib/pgsql/9.5/data/postgresql.conf
+#        regexp: "listen_addresses = "
+#        line: "listen_addresses = '*'"
+#
+#    - name: modify /var/lib/pgsql/9.5/data/pg_hba.conf--allow all hosts access
+#      lineinfile: 
+#        dest: /var/lib/pgsql/9.5/data/pg_hba.conf
+#        line: "host    all             all             0.0.0.0/0                md5"
+#        state: present
+#
+#
+#- name: change pass and create database
+#  hosts: control-node
+#  tasks:
+#    - name: install pip
+#      script: "{{ getPip_path }}"
+#      args:
+#        creates: /usr/bin/pip
+#
+#    - name: install psycopg2
+#      pip:
+#        name: psycopg2
+#
+#    - name: change pass
+#      become: true
+#      become_user: postgres
+#      postgresql_user:
+#        name: postgres
+#        password: postgres
+#
+#    - name: create database
+#      become: true
+#      become_user: postgres
+#      postgresql_db:
+#        name: ambari
+#
+- name: upload ambari,HDP,HDP-UTILS
+  hosts: control-node
+  vars_files:
+    - ./configs/vars.yml
+  tasks:
+    - name: unarchive ambari package
+      unarchive: 
+        src: "{{ambari_package_path}}"
+        dest: /var/www/html
+        #remote_src: yes
+
+    - name: unarchive HDP package
+      unarchive: 
+        src: "{{HDP_package_path}}"
+        dest: /var/www/html
+        #remote_src: yes
+
+    - file:
+        path: /var/www/html/HDP-UTILS
+        state: directory
+
+    - name: unarchive HDP-UTILS package
+      unarchive: 
+        src: "{{HDP_UTILS_package_path}}"
+        dest: /var/www/html/HDP-UTILS
+        #remote_src: yes
+
+- name: dispatch locale repo file
+  hosts: all
+  vars_files:
+    - ./configs/vars.yml
+  tasks:
+    - name: dispatch repo file
+      template:
+        src: "{{ repo_template_path }}/{{ repo_template_name }}"
+        dest: "/etc/yum.repos.d/{{ repo_template_name }}"
+
+
+- name: install ambari-server
+  hosts: control-node
+  tasks:
+    - name: install ambari-server
+      yum:
+        name: ambari-server
+        state: present
+
+
+- name: install ambari-agent
+  hosts: all
+  tasks:
+    - name: install ambari-agent
+      yum:
+        name: ambari-agent
+        state: present
+
+    - name: modiyf ambari-agent.ini
+      lineinfile:
+        dest: /etc/ambari-agent/conf/ambari-agent.ini
+        regexp: "hostname="
+        line: "hostname={{ groups['control-node'][0] }}"
+        insertbefore: "^url_port"
+
+    - name: start ambari_agent
+      service:
+        name: ambari-agent
+        state: started
+        enabled: yes
