@@ -1,2 +1,2 @@
 # setup-env-for-ambari
-User ansible to prepare fund enviroment for ambari 
+Use ansible to prepare fund enviroment for ambari 
