@@ -1,0 +1,8 @@
+#VERSION_NUMBER=2.4.2.0-258
+[HDP-2.4.2.0]
+name=HDP Version - HDP-2.4.2.0
+baseurl=http://{{ groups['control-node'][0] }}/HDP/centos7/2.x/updates/2.4.2.0
+gpgcheck=1
+gpgkey=http://{{ groups['control-node'][0] }}/HDP/centos7/2.x/updates/2.4.2.0/RPM-GPG-KEY/RPM-GPG-KEY-Jenkins
+enabled=1
+priority=1

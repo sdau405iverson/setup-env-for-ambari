@@ -1,0 +1,6 @@
+[HDP-UTILS-1.1.0.20]
+name=Hortonworks Data Platform Version - HDP-UTILS-1.1.0.20
+baseurl= http://{{ groups['control-node'][0] }}/HDP-UTILS-1.1.0.20/repos/centos7/
+gpgcheck=1
+enabled=1
+priority=1

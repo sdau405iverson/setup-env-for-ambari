@@ -1,0 +1,62 @@
+net_work: 10.2.211.0
+net_mask: 255.255.255.0
+
+hostname_vars:
+  - ip: 192.168.3.181
+    hostname_long: auto-cn-01.embrace.com
+    hostname_short: auto-cn-01
+
+  - ip: 192.168.3.182
+    hostname_long: auto-nn-01.embrace.com
+    hostname_short: auto-nn-01
+
+  - ip: 192.168.3.183
+    hostname_long: auto-nn-02.embrace.com
+    hostname_short: auto-nn-02
+
+
+security_limit_vars:
+  - domain: "*"
+    type: "soft"
+    item: "nproc"
+    value: 65535
+  - domain: "*"
+    type: "hard"
+    item: "nproc"
+    value: 65535
+  - domain: "*"
+    type: "soft"
+    item: "nofile"
+    value: 65535
+  - domain: "*"
+    type: "hard"
+    item: "nofile"
+    value: 65535
+
+system_vars:
+  - item: DefaultLimitCORE
+    value: infinity
+  - item: DefaultLimitNOFILE
+    value: 65535
+  - item: DefaultLimitNPROC
+    value: 65535
+
+pg_repository_rpm: https://download.postgresql.org/pub/repos/yum/9.5/redhat/rhel-7-x86_64/pgdg-oraclelinux95-9.5-2.noarch.rpm
+                  #https://download.postgresql.org/pub/repos/yum/9.5/redhat/rhel-7-x86_64/pgdg-redhat95-9.5-2.noarch.rpm
+ambari_package_path: ./package/hdp-2.6.2.0-centos7/ambari-2.5.2.0-centos7.tar.gz
+HDP_package_path: ./package/hdp-2.6.2.0-centos7/HDP-2.6.2.0-centos7-rpm.tar.gz
+HDP_UTILS_package_path: ./package/hdp-2.6.2.0-centos7/HDP-UTILS-1.1.0.21-centos7.tar.gz
+pg_packages_dir: ./package/postgresql95
+jdk_package_path: ./package/jdk/jdk-8u131-linux-x64.tar.gz
+jce_package_path: ./package/jdk/jce_policy-8.zip
+getPip_path: ./package/getPip.py
+
+
+
+repo_template_path: ./package
+repo_template_name: ambari.repo
+#  - template_path: ./package
+#    template_name: hdp.repo
+#  - template_path: ./package
+#    template_name: hdp-util.repo
+

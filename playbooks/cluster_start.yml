@@ -1,0 +1,86 @@
+---
+- name: start ambari-agent
+  hosts: manage-node:data-node
+  tasks:
+    - name: start ambari-agent
+      service:
+        name: ambari-agent
+        state: started
+
+- name: start ambari-server krb5kdc kadmin
+  hosts: control-node
+  tasks:
+    - name: start ambari-server
+      service:
+        name: ambari-server
+        state: started
+
+    - name: start krb5kdc
+      service:
+        name: krb5kdc
+        state: started
+
+    - name: start kadmin
+      service:
+        name: kadmin
+        state: started
+
+
+- name: start services on edge-node
+  hosts: edge-node
+  tasks:
+    - name: klist
+      become: true
+      become_user: embrace
+      shell: klist
+      register: kl
+
+    - debug: 
+        var: kl.stdout.find('hue/edgenode.cars.com')
+
+    - name: kinit ticket of hue
+      become: true
+      become_user: embrace
+      shell: "kinit -kt /etc/security/keytabs/hue.service.keytab hue/edgenode.cars.com@CARS.COM"
+      when: kl.stdout.find('hue/edgenode.cars.com') == -1
+
+    - name: get status of hue
+      shell: ps -ef | grep [r]unserver
+      register: hue_run_status
+      ignore_errors: yes
+
+    - name: start hue 
+      become: true
+      become_user: embrace
+      shell: "nohup ./build/env/bin/hue runserver 0.0.0.0:8888 &"
+     # debug: var=hue_run_status.stdout.find('/build/env/bin/hue runserver')
+      args:
+        chdir: /opt/hue
+      when: hue_run_status.rc != 0
+
+    - name: start embrace-bigdata
+      become: true
+      become_user: embrace
+      shell: "/opt/embrace/embracebigdata/bin/start.sh"
+      args:
+        chdir: /opt/embrace/embracebigdata
+      register: embrace_bigdata_status
+
+    - debug: var=embrace_bigdata_status
+
+    - name: start openresty
+      shell: "/opt/openresty/bin/openresty"
+      args:
+        chdir: /opt/openresty/bin
+        creates: /opt/openresty/nginx/logs/nginx.pid
+
+    - name: get status of metabase
+      shell: ps -ef | grep '[j]ava -jar -Xms2g -Xmx2g -jar metabase.jar'
+      register: metabase_status
+      ignore_errors: yes
+
+    - name: start metabase
+      shell: "sh /opt/metabase/start.sh"
+      args:
+        chdir: /opt/metabase
+      when: metabase_status.rc != 0

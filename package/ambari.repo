@@ -1,0 +1,7 @@
+#VERSION_NUMBER=2.5.2.0-298
+[ambari-2.5.2.0]
+name=ambari Version - ambari-2.5.2.0
+baseurl=http://{{ groups['control-node'][0] }}/ambari/centos7
+gpgkey=http://{{ groups['control-node'][0] }}/ambari/centos7/RPM-GPG-KEY/RPM-GPG-KEY-Jenkins
+enabled=1
+priority=1
