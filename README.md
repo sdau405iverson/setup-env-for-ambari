@@ -67,6 +67,8 @@ EOF
 ```
 # 编辑主机列表文件
 
+setup-env-for-ambari/hosts/inventory
+
 ```
 [control-node]
 192.168.3.181 ansible_ssh_user=samsing  ansible_ssh_pass=samsing timeout=90 ansible_become=yes ansible_become_user=root ansible_become_pass=redhat ansible_become_method=su ansible_become_flags='-'
@@ -105,6 +107,7 @@ ansible_become_flags='-'
 1. 使用方法
 
 ```
+cd setup-env-for-ambari
 ansible-playbook -i hosts/inventory playbooks/set_env_ol7.yml
 ```
 
@@ -157,6 +160,8 @@ playbook使用yaml格式。
 变量文件使用的也是yml格式
 
 脚本使用过程中一般只需要按实际情况对以下变量进行修改
+
+setup-env-for-ambari/configs/vasr.yml
 
 ```
 net_work: 10.2.211.0
