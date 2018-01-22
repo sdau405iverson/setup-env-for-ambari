@@ -6,7 +6,7 @@
   tasks:   # task列表
     - name: close firewall #task名称
       service: #task所使用的module
-        name: firewalld/
+        name: firewalld
         state: stopped
         enabled: no
 
