@@ -102,6 +102,42 @@ ansible_become_method=su
 
 ansible_become_flags='-'
 
+**一定记得根据实际环境情况对ip及用户信息进行相应的修改**
+
+# 编辑变量文件
+
+setup-env-for-ambari/configs/vars.yml
+
+    net_work: 10.2.211.0
+    net_mask: 255.255.255.0
+    
+    hostname_vars:
+      - ip: 192.168.3.181
+        hostname_long: auto-cn-01.embrace.com
+        hostname_short: auto-cn-01
+    
+      - ip: 192.168.3.182
+        hostname_long: auto-nn-01.embrace.com
+        hostname_short: auto-nn-01
+    
+      - ip: 192.168.3.183
+        hostname_long: auto-nn-02.embrace.com
+        hostname_short: auto-nn-02
+    
+
+主要是修改内容:
+
+1. net_work
+2. net_mask
+3. hostname_vars
+   该变量主要用于配置/etc/hosts文件
+         - ip: 192.168.3.181
+           hostname_long: auto-cn-01.embrace.com
+           hostname_short: auto-cn-01
+       
+   对应/etc/hosts中的一个条目： 192.168.3.181 auto-cn-01.embrace.com auto-cn-01
+
+
 # 脚本使用方法及简介
 
 1. 使用方法
@@ -161,7 +197,7 @@ playbook使用yaml格式。
 
 脚本使用过程中一般只需要按实际情况对以下变量进行修改
 
-setup-env-for-ambari/configs/vasr.yml
+setup-env-for-ambari/configs/vars.yml
 
 ```
 net_work: 10.2.211.0
