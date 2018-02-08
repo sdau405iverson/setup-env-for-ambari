@@ -191,29 +191,3 @@ playbook使用yaml格式。
       with_items: "{{ hostname_vars }}"
 ```
 
-3.变量文件简介
-
-变量文件使用的也是yml格式
-
-脚本使用过程中一般只需要按实际情况对以下变量进行修改
-
-setup-env-for-ambari/configs/vars.yml
-
-```
-net_work: 10.2.211.0
-net_mask: 255.255.255.0
-
-hostname_vars:
-  - ip: 192.168.3.181
-    hostname_long: auto-cn-01.embrace.com
-    hostname_short: auto-cn-01
-
-  - ip: 192.168.3.182
-    hostname_long: auto-nn-01.embrace.com
-    hostname_short: auto-nn-01
-
-  - ip: 192.168.3.183
-    hostname_long: auto-nn-02.embrace.com
-    hostname_short: auto-nn-02
-```
-
